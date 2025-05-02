@@ -66,11 +66,11 @@ $$ LANGUAGE plpgsql;
 
 # Izgled aplikacije
 Demo aplikacije
-![demo](src/main/resources/static/images/home.png)
-![messages](src/main/resources/static/images/messages.png)
+![demo](src/main/resources/static/images/home.PNG)
+![messages](src/main/resources/static/images/messages.PNG)
 
 O aplikaciji
-![about](src/main/resources/static/images/about.png)
+![about](src/main/resources/static/images/about.PNG)
 
 Sigurnosni problemi i nedostatci
-![security](src/main/resources/static/images/security.png)
+![security](src/main/resources/static/images/security.PNG)
