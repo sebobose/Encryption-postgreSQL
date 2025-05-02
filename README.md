@@ -53,3 +53,24 @@ $$ LANGUAGE plpgsql;
 - ovim upitom se stvara tablica `messages` i funkcija za šifriranje i dešifriranje poruka
 - funkcija `encrypt_message_func` automatski šifrira poruku prilikom umetanja ili ažuriranja redaka
 
+# Postavljanje okruženja
+- aplikacija je Spring Boot projekt koji koristi Java 17 i Maven
+- provjerite imate li instalirane JDK 17 i Maven
+- klonirajte repozitorij
+- postavite Spring boot projekt
+- promijenite varijable okruženja DB_PASS i DB_USERNAME kako bi ste se mogli spojiti na bazu podataka
+  ili promijenite vrijednosti iza dvotočke u src/main/resources/application.properties
+  (ako je šifra 1234 redak sa šifrom će izgledati ovako: `spring.datasource.password=${DB_PASS:1234}`)
+- pokrenite aplikaciju
+- otvorite preglednik i idite na `http://localhost:8080/api`
+
+# Izgled aplikacije
+Demo aplikacije
+![demo](src/main/resources/static/images/home.png)
+![messages](src/main/resources/static/images/messages.png)
+
+O aplikaciji
+![about](src/main/resources/static/images/about.png)
+
+Sigurnosni problemi i nedostatci
+![security](src/main/resources/static/images/security.png)
