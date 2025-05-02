@@ -52,3 +52,4 @@ $$ LANGUAGE plpgsql;
 ```
 - ovim upitom se stvara tablica `messages` i funkcija za šifriranje i dešifriranje poruka
 - funkcija `encrypt_message_func` automatski šifrira poruku prilikom umetanja ili ažuriranja redaka
+
