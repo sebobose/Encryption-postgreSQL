@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostgreSQL Encryption</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2a5885;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input, textarea, button {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #2a5885;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1c3f5d;
+        }
+        .encrypted-message {
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background-color: #f1f1f1;
+            border: none;
+            cursor: pointer;
+            width: auto;
+        }
+        .tab.active {
+            background-color: #2a5885;
+            color: white;
+        }
+        .data-entry {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+            font-family: monospace;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .warning {
+            color: #d9534f;
+        }
+    </style>
+</head>
+<body>
+<h1>Šifriranje u postgreSQL-u</h1>
+
+<div class="tabs">
+    <button class="tab active" onclick="openTab(event, 'demo')">Demo</button>
+    <button class="tab" onclick="openTab(event, 'about')">O aplikaciji</button>
+    <button class="tab" onclick="openTab(event, 'limitations')">Sigurnosni problemi i nedostatci</button>
+</div>
+
+<div id="demo" class="tab-content active">
+    <div class="container">
+        <div class="card">
+            <h2>Upiši poruku</h2>
+            <div>
+                <label for="username">Korisničko ime:</label>
+                <input type="text" id="username" placeholder="Upišite korisničko ime">
+
+                <label for="message">Poruka:</label>
+                <textarea id="message" placeholder="Upišite poruku" rows="4"></textarea>
+
+                <button onclick="storeData()">Spremi poruku</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Spremljene poruke</h2>
+            <button onclick="loadData()">Učitaj spremljene poruke</button>
+            <div id="dataList"></div>
+        </div>
+    </div>
+</div>
+
+<div id="about" class="tab-content">
+    <div class="card">
+        <h2>O aplikaciji</h2>
+        <p>Ova aplikacija demonstrira kako koristiti PostgreSQL-ovu <code>pgcrypto</code> ekstenziju za šifriranje osjetljivih podataka prije pohrane u bazu podataka.</p>
+
+        <h3>Kako funkcionira</h3>
+        <ul>
+            <li>Aplikacija koristi PostgreSQL-ove funkcije <code>pgp_sym_encrypt</code> i <code>pgp_sym_decrypt</code></li>
+            <li>Podaci se šifriraju simetričnim ključem prije pohrane</li>
+            <li>Prilikom dohvaćanja, podaci se dešifriraju istim ključem</li>
+            <li>Šifriranje/dešifriranje se odvija unutar samog PostgreSQL-a</li>
+        </ul>
+
+        <h3>Tehnički detalji</h3>
+        <p>Ova aplikacija je izgrađena pomoću:</p>
+        <ul>
+            <li>Spring Boot backend-a s JPA</li>
+            <li>PostgreSQL baze podataka s pgcrypto ekstenzijom</li>
+            <li>Jednostavnog HTML/JavaScript sučelja</li>
+        </ul>
+    </div>
+</div>
+
+<div id="limitations" class="tab-content">
+    <div class="card">
+        <h2>Sigurnosna ograničenja i ranjivosti</h2>
+
+        <h3>1. Slanje nešifriranih podataka</h3>
+        <p>U ovoj implementaciji <span class="warning">podatci se šalju nešifrirani između aplikacije i baze</span>. To znači:</p>
+        <ul>
+            <li>Podaci su izloženi dok putuju do baze</li>
+            <li>Ako napadač prisluškuje mrežni promet, može vidjeti osjetljive podatke</li>
+        </ul>
+
+        <h3>2. Nedostatak rotacije ključeva</h3>
+        <p><span class="warning">Ne postoji mehanizam za automatsku rotaciju ključeva</span>, što predstavlja veliki sigurnosni rizik:</p>
+        <ul>
+            <li>Ako napadač sazna ključ, može dešifrirati sve podatke u bazi</li>
+            <li>Svi podaci koriste isti ključ — to stvara jednu točku neuspjeha</li>
+            <li>Promjena ključa zahtijeva ponovno šifriranje svih podataka</li>
+        </ul>
+
+        <h3>3. Slaba provjera integriteta</h3>
+        <p>Za detekciju promjena koristi se <span class="warning">MDC mehanizam koji koristi SHA-1 bez tajnog ključa</span>:</p>
+        <ul>
+            <li>SHA-1 više nije kriptografski siguran zbog poznatih kolizija</li>
+            <li>Bez tajnog ključa, napadač može modificirati podatke i ponovno izračunati hash</li>
+        </ul>
+
+        <h3>4. Ograničena kontrola nad AES šifriranjem</h3>
+        <p>PostgreSQL koristi <span class="warning">AES u CBC načinu rada bez mogućnosti konfiguracije</span>:</p>
+        <ul>
+            <li>Način rada (AES-CBC) se ne može promijeniti</li>
+            <li>IV (inicijalizacijski vektor) se automatski generira, što smanjuje kontrolu nad sigurnošću</li>
+            <li>Ne postoji podrška za naprednije načine poput AES-GCM koji uključuju autentifikaciju</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = 'http://localhost:8080/api';
+
+    function storeData() {
+        const username = document.getElementById('username').value.trim();
+        const message = document.getElementById('message').value.trim();
+
+        if (!username || !message) {
+            alert('Morate upisati i korisničko ime i poruku!');
+            return;
+        }
+
+        fetch(`${API_BASE_URL}/data`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                message: message
+            }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Podaci su spremljeni u bazu!');
+                    document.getElementById('username').value = '';
+                    document.getElementById('message').value = '';
+                    loadData();
+                } else {
+                    alert('Dogodila se pogreška: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Dogodila se pogreška, probajte ponovno.');
+            });
+    }
+
+    function loadData() {
+        fetch(`${API_BASE_URL}/data`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Loaded data:', data);
+                const dataList = document.getElementById('dataList');
+                dataList.innerHTML = '';
+
+                if (!data.success || data.data.length === 0) {
+                    dataList.innerHTML = '<p>Nema spremljenih podataka.</p>';
+                    return;
+                }
+
+                data.data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'data-entry';
+                    div.innerHTML = `
+                        <strong>ID:</strong> ${item.id}<br>
+                        <strong>Korisničko ime:</strong> ${item.sender}<br>
+                        <strong>Šifrirana poruka:</strong> <span class="encrypted-message">${item.encryptedMessage}</span><br>
+                        <strong>Dešifrirana poruka:</strong> ${item.plaintextMessage}<br>
+                        <strong>Datum:</strong> ${new Date(item.createdAt).toLocaleString()}
+                    `;
+                    dataList.appendChild(div);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('dataList').innerHTML = '<p>Greška u učitavanju podataka.</p>';
+            });
+    }
+
+    function openTab(evt, tabName) {
+        const tabContents = document.getElementsByClassName('tab-content');
+        for (let i = 0; i < tabContents.length; i++) {
+            tabContents[i].classList.remove('active');
+        }
+
+        const tabs = document.getElementsByClassName('tab');
+        for (let i = 0; i < tabs.length; i++) {
+            tabs[i].classList.remove('active');
+        }
+
+        document.getElementById(tabName).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+</script>
+</body>
+</html>
